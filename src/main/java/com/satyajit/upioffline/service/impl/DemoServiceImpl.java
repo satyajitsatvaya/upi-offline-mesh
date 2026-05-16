@@ -16,7 +16,6 @@ import com.satyajit.upioffline.service.DemoService;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -36,10 +35,10 @@ public class DemoServiceImpl implements DemoService {
     @PostConstruct
     public void seedAccounts() {
         if (accounts.count() == 0) {
-            accounts.save(new Account("alice@demo", "Alice", new BigDecimal("5000.00"), null));
-            accounts.save(new Account("bob@demo",   "Bob",   new BigDecimal("1000.00"), null));
-            accounts.save(new Account("carol@demo", "Carol", new BigDecimal("2500.00"), null));
-            accounts.save(new Account("dave@demo",  "Dave",  new BigDecimal("500.00"),  null));
+            accounts.save(new Account("satyajit@ybl", "Satyajit", new BigDecimal("5000.00"), null));
+            accounts.save(new Account("sounak@apl",   "Sounak",   new BigDecimal("1000.00"), null));
+            accounts.save(new Account("manish@okaxis", "Manish", new BigDecimal("2500.00"), null));
+            accounts.save(new Account("animesh@upi",  "Animesh",  new BigDecimal("500.00"),  null));
             log.info("Seeded 4 demo accounts");
         }
     }

@@ -10,6 +10,7 @@ package com.satyajit.upioffline.service.impl;
 import com.satyajit.upioffline.model.MeshPacket;
 import com.satyajit.upioffline.service.MeshSimulatorService;
 import com.satyajit.upioffline.service.VirtualDevice;
+import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -22,13 +23,8 @@ public class MeshSimulatorServiceImpl implements MeshSimulatorService {
 
     private final Map<String, VirtualDevice> devices = new ConcurrentHashMap<>();
 
-    public MeshSimulatorServiceImpl() {
-        seedDefaultDevices();
-    }
-
-    // 4 offline phones in a basement, 1 bridge phone with 4G outside
-    private void seedDefaultDevices() {
-        devices.put("phone-alice",     new VirtualDevice("phone-alice",     false));
+    @PostConstruct
+    public void seedDefaultDevices() {
         devices.put("phone-stranger1", new VirtualDevice("phone-stranger1", false));
         devices.put("phone-stranger2", new VirtualDevice("phone-stranger2", false));
         devices.put("phone-stranger3", new VirtualDevice("phone-stranger3", false));
@@ -47,16 +43,14 @@ public class MeshSimulatorServiceImpl implements MeshSimulatorService {
 
     @Override
     public void inject(String senderDeviceId, MeshPacket packet) {
+        // create sender device dynamically if not already in mesh
+        devices.putIfAbsent(senderDeviceId, new VirtualDevice(senderDeviceId, false));
         VirtualDevice sender = devices.get(senderDeviceId);
-        if (sender == null)
-            throw new IllegalArgumentException("Unknown device: " + senderDeviceId);
         sender.hold(packet);
         log.info("Packet {} injected at {} (TTL={})",
                 packet.getPacketId().substring(0, 8), senderDeviceId, packet.getTtl());
     }
 
-    // one round of gossip — snapshot taken at round start so packets
-    // don't travel through all devices in one step
     @Override
     public GossipResult gossipOnce() {
         int transfers = 0;
@@ -113,6 +107,11 @@ public class MeshSimulatorServiceImpl implements MeshSimulatorService {
 
     @Override
     public void resetMesh() {
+        // remove dynamic sender devices, keep strangers and bridge
+        devices.entrySet().removeIf(e ->
+                !e.getKey().startsWith("phone-stranger") &&
+                        !e.getKey().equals("phone-bridge")
+        );
         devices.values().forEach(VirtualDevice::clear);
     }
 }
