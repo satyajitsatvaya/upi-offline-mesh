@@ -1,9 +1,9 @@
 package com.satyajit.upioffline.service;
 
 /*
- * Seeds demo accounts on startup and simulates the sender phone
- * creating an encrypted payment packet before injecting into the mesh.
- * In production, createPacket() runs on the Android device in Kotlin.
+ * Helper service that:
+ *   - seeds demo accounts on startup
+ *   - simulates "sender phone creates an encrypted packet" flow
  */
 
 import com.satyajit.upioffline.crypto.HybridCryptoService;
