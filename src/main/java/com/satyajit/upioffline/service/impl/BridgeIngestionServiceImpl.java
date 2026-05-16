@@ -18,6 +18,7 @@ import com.satyajit.upioffline.service.BridgeIngestionService;
 import com.satyajit.upioffline.service.IdempotencyService;
 import com.satyajit.upioffline.service.SettlementService;
 import com.satyajit.upioffline.service.VelocityCheckService;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -27,12 +28,13 @@ import java.time.Instant;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class BridgeIngestionServiceImpl implements BridgeIngestionService {
 
-    @Autowired private HybridCryptoService crypto;
-    @Autowired private IdempotencyService idempotency;
-    @Autowired private VelocityCheckService velocityCheck;
-    @Autowired private SettlementService settlement;
+     private final HybridCryptoService crypto;
+     private final IdempotencyService idempotency;
+     private final VelocityCheckService velocityCheck;
+     private final SettlementService settlement;
 
     @Value("${upi.mesh.packet-max-age-seconds:86400}")
     private long maxAgeSeconds;

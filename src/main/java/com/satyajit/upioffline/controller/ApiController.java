@@ -22,6 +22,7 @@ import com.satyajit.upioffline.service.DemoService;
 import com.satyajit.upioffline.service.IdempotencyService;
 import com.satyajit.upioffline.service.MeshSimulatorService;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -31,15 +32,17 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api")
+@RequiredArgsConstructor
 public class ApiController {
 
-    @Autowired private ServerKeyHolder serverKey;
-    @Autowired private DemoService demo;
-    @Autowired private MeshSimulatorService mesh;
-    @Autowired private BridgeIngestionService bridge;
-    @Autowired private AccountRepository accountRepo;
-    @Autowired private TransactionRepository txRepo;
-    @Autowired private IdempotencyService idempotency;
+    private final ServerKeyHolder serverKey;
+    private final DemoService demo;
+    private final MeshSimulatorService mesh;
+    private final BridgeIngestionService bridge;
+    private final AccountRepository accountRepo;
+    private final TransactionRepository txRepo;
+    private final IdempotencyService idempotency;
+
 
     // server RSA public key — sender devices fetch this once to encrypt payloads
     @GetMapping("/server-key")

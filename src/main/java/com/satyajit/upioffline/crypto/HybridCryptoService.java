@@ -13,6 +13,7 @@ package com.satyajit.upioffline.crypto;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.satyajit.upioffline.model.PaymentInstruction;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -31,6 +32,7 @@ import java.security.spec.MGF1ParameterSpec;
 import java.util.Base64;
 
 @Service
+@RequiredArgsConstructor
 public class HybridCryptoService {
 
     private static final String RSA_TRANSFORMATION = "RSA/ECB/OAEPWithSHA-256AndMGF1Padding";
@@ -43,8 +45,8 @@ public class HybridCryptoService {
     private final SecureRandom rng = new SecureRandom();
     private final ObjectMapper json = new ObjectMapper();
 
-    @Autowired
-    private ServerKeyHolder serverKey;
+
+    private final ServerKeyHolder serverKey;
 
     // Called by the simulated sender device to encrypt a payment before injecting into mesh
     public String encrypt(PaymentInstruction instruction, PublicKey serverPublicKey) throws Exception {

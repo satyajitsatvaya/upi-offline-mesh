@@ -14,6 +14,7 @@ import com.satyajit.upioffline.model.PaymentInstruction;
 import com.satyajit.upioffline.repository.AccountRepository;
 import com.satyajit.upioffline.service.DemoService;
 import jakarta.annotation.PostConstruct;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -25,11 +26,12 @@ import java.util.UUID;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class DemoServiceImpl implements DemoService {
 
-    @Autowired private AccountRepository accounts;
-    @Autowired private HybridCryptoService crypto;
-    @Autowired private ServerKeyHolder serverKey;
+    private final AccountRepository accounts;
+    private final HybridCryptoService crypto;
+    private final ServerKeyHolder serverKey;
 
     @PostConstruct
     public void seedAccounts() {

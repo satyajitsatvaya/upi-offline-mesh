@@ -12,6 +12,7 @@ import com.satyajit.upioffline.model.Transaction;
 import com.satyajit.upioffline.repository.AccountRepository;
 import com.satyajit.upioffline.repository.TransactionRepository;
 import com.satyajit.upioffline.service.SettlementService;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -22,10 +23,11 @@ import java.time.Instant;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class SettlementServiceImpl implements SettlementService {
 
-    @Autowired private AccountRepository accounts;
-    @Autowired private TransactionRepository transactions;
+    private final AccountRepository accounts;
+    private final TransactionRepository transactions;
 
     @Override
     @Transactional
