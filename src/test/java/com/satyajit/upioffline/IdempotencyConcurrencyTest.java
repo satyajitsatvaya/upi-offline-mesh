@@ -42,51 +42,51 @@ class IdempotencyConcurrencyTest {
 
     @Test
     void singlePacketDeliveredByThreeBridgesSettlesExactlyOnce() throws Exception {
-        BigDecimal aliceBefore = accounts.findById("alice@demo").orElseThrow().getBalance();
-        BigDecimal bobBefore = accounts.findById("bob@demo").orElseThrow().getBalance();
+        BigDecimal satyajitBefore = accounts.findById("satyajit@ybl").orElseThrow().getBalance();
+        BigDecimal sounakBefore = accounts.findById("sounak@apl").orElseThrow().getBalance();
 
-        // one packet delivered by 3 bridge nodes simultaneously
         MeshPacket packet = demoService.createPacket(
-                "alice@demo", "bob@demo", new BigDecimal("100.00"), "1234", 5);
+                "satyajit@ybl", "sounak@apl", new BigDecimal("100.00"), "1234", 5);
 
-        ExecutorService pool = Executors.newFixedThreadPool(3);
         CountDownLatch start = new CountDownLatch(1);
         AtomicInteger settled = new AtomicInteger();
         AtomicInteger duplicates = new AtomicInteger();
 
         Future<?>[] futures = new Future[3];
-        for (int i = 0; i < 3; i++) {
-            final String node = "bridge-" + i;
-            futures[i] = pool.submit(() -> {
-                try {
-                    start.await(); // all threads wait here until released at once
-                    BridgeIngestionService.IngestResult r = bridge.ingest(packet, node, 3);
-                    if ("SETTLED".equals(r.outcome())) settled.incrementAndGet();
-                    else if ("DUPLICATE_DROPPED".equals(r.outcome())) duplicates.incrementAndGet();
-                } catch (Exception e) { throw new RuntimeException(e); }
-            });
-        }
 
-        start.countDown(); // release all 3 threads at the same instant
-        for (Future<?> f : futures) f.get(5, TimeUnit.SECONDS);
-        pool.shutdown();
+        // try-with-resources ensures pool is shut down after test
+        try (ExecutorService pool = Executors.newFixedThreadPool(3)) {
+            for (int i = 0; i < 3; i++) {
+                final String node = "bridge-" + i;
+                futures[i] = pool.submit(() -> {
+                    try {
+                        start.await(); // all threads wait here until released at once
+                        BridgeIngestionService.IngestResult r = bridge.ingest(packet, node, 3);
+                        if ("SETTLED".equals(r.outcome())) settled.incrementAndGet();
+                        else if ("DUPLICATE_DROPPED".equals(r.outcome())) duplicates.incrementAndGet();
+                    } catch (Exception e) { throw new RuntimeException(e); }
+                });
+            }
+
+            start.countDown(); // release all 3 threads at the same instant
+            for (Future<?> f : futures) f.get(5, TimeUnit.SECONDS);
+        }
 
         assertEquals(1, settled.get(), "exactly one bridge should settle");
         assertEquals(2, duplicates.get(), "the other two should be duplicates");
 
-        // verify balance moved exactly once
-        BigDecimal aliceAfter = accounts.findById("alice@demo").orElseThrow().getBalance();
-        BigDecimal bobAfter = accounts.findById("bob@demo").orElseThrow().getBalance();
-        assertEquals(aliceBefore.subtract(new BigDecimal("100.00")), aliceAfter);
-        assertEquals(bobBefore.add(new BigDecimal("100.00")), bobAfter);
+        BigDecimal satyajitAfter = accounts.findById("satyajit@ybl").orElseThrow().getBalance();
+        BigDecimal sounakAfter = accounts.findById("sounak@apl").orElseThrow().getBalance();
+        assertEquals(satyajitBefore.subtract(new BigDecimal("100.00")), satyajitAfter);
+        assertEquals(sounakBefore.add(new BigDecimal("100.00")), sounakAfter);
     }
 
     @Test
     void tamperedCiphertextIsRejected() throws Exception {
         MeshPacket packet = demoService.createPacket(
-                "alice@demo", "bob@demo", new BigDecimal("50.00"), "1234", 5);
+                "satyajit@ybl", "sounak@apl", new BigDecimal("50.00"), "1234", 5);
 
-        // flip one character in the ciphertext — GCM tag will fail on decrypt
+        // flip one character — GCM tag will fail on decrypt
         char[] chars = packet.getCiphertext().toCharArray();
         chars[chars.length / 2] = chars[chars.length / 2] == 'A' ? 'B' : 'A';
         packet.setCiphertext(new String(chars));
@@ -97,10 +97,9 @@ class IdempotencyConcurrencyTest {
 
     @Test
     void encryptDecryptRoundTrip() throws Exception {
-        // build using setters since PaymentInstruction uses @NoArgsConstructor
         PaymentInstruction original = new PaymentInstruction();
-        original.setSenderVpa("alice@demo");
-        original.setReceiverVpa("bob@demo");
+        original.setSenderVpa("satyajit@ybl");
+        original.setReceiverVpa("sounak@apl");
         original.setAmount(new BigDecimal("123.45"));
         original.setPinHash("abcdef");
         original.setNonce("nonce-1");
